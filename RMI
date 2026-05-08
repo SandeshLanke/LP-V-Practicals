@@ -1,0 +1,85 @@
+//Hello.java
+
+import java.rmi.*;
+
+public interface Hello extends Remote {
+    String sayHello(String name) throws RemoteException;
+}
+
+
+
+
+
+//HelloImpl
+
+import java.rmi.*;
+import java.rmi.server.*;
+
+public class HelloImpl extends UnicastRemoteObject implements Hello {
+
+    protected HelloImpl() throws RemoteException {
+        super();
+    }
+
+    public String sayHello(String name) throws RemoteException {
+
+        // Print thread info on server
+        String threadName = Thread.currentThread().getName();
+        System.out.println("Request from: " + name + " handled by " + threadName);
+
+        try {
+            Thread.sleep(2000); // simulate processing
+        } catch (InterruptedException e) {}
+
+        return "Hello " + name + " from Server (Thread: " + threadName + ")";
+    }
+}
+
+
+
+
+
+//Client
+import java.rmi.*;
+import java.util.Scanner;
+
+public class Client {
+    public static void main(String[] args) {
+        try {
+            Hello obj = (Hello)                     Naming.lookup("rmi://localhost/HelloService");
+
+            Scanner sc = new Scanner(System.in);
+            System.out.print("Enter your name: ");
+            String name = sc.nextLine();
+
+            String response = obj.sayHello(name);
+
+            System.out.println("Server Response: " + response);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+
+
+
+
+//Server
+import java.rmi.*;
+
+public class Server {
+    public static void main(String[] args) {
+        try {
+            HelloImpl obj = new HelloImpl();
+
+            Naming.rebind("rmi://localhost/HelloService", obj);
+
+            System.out.println("Server started...");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+
